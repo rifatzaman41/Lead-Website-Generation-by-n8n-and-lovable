@@ -1,0 +1,405 @@
+{
+  "name": "Website Lead generation Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "actorSource": "store",
+        "actorId": {
+          "__rl": true,
+          "value": "https://console.apify.com/actors/2Mdma1N6Fd0y3QEjR/input",
+          "mode": "url"
+        },
+        "customBody": "={\n    \"language\": \"en\",\n    \"locationQuery\": \"{{ $json.body.location }}\",\n    \"maxCrawledPlacesPerSearch\":{{ $json.body.maxResults }},\n    \"searchStringsArray\": [\n        \"{{ $json.body.query }}\"\n    ],\n    \"skipClosedPlaces\": false\n} "
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        -464,
+        -176
+      ],
+      "id": "c44972b2-f9ca-4c5f-89bd-663edf23f720",
+      "name": "Run an Actor",
+      "credentials": {
+        "apifyApi": {
+          "id": "PXAr1t4z8FAIu60L",
+          "name": "Apify account 77"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "Datasets",
+        "datasetId": "={{ $json.defaultDatasetId }}",
+        "options": {}
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        -160
+      ],
+      "id": "9720eb22-9597-4370-ac7a-3963e7ca453b",
+      "name": "Get dataset items",
+      "credentials": {
+        "apifyApi": {
+          "id": "PXAr1t4z8FAIu60L",
+          "name": "Apify account 77"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "baf3a393-93d7-4899-a5af-b61b324a916d",
+              "leftValue": "={{ $json.permanentlyClosed }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "b3adf0a1-f366-4217-98cf-7d4d7dfcc1ec",
+              "leftValue": "={{ $json.temporarilyClosed }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -64,
+        -128
+      ],
+      "id": "87efbcd4-b6bc-4856-a67a-e20ea1482b75",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        112,
+        -128
+      ],
+      "id": "f382d0c4-4692-4911-835f-e59ecb58fe11",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a business research assistant specialized in finding quick, relevant insights for outreach.\n\nYour task:\nResearch the business provided in the input and generate 3 to 5 short, high-value talking points.\n\nGuidelines:\n\n- Use available tools (Gemini chat model) to gather information if needed.\n- Each insight must be a single sentence.\n- Each sentence must be under 20 words.\n- Do not repeat input details unless mentioning owner or manager name.\n- Keep insights concise, factual, and useful for outreach.\n\nFocus on:\n- Reputation, reviews, ratings\n- News, achievements, awards\n- Community involvement or partnerships\n- Service specialties or unique offerings\n\nOutput Rules (STRICT):\n- Output ONLY plain text\n- One insight per line\n- No numbering\n- No bullets\n- No extra explanation\n- No JSON\n- No labels\n\nExample Format:\nFrank Pepe rated 8.5 by Dave Portnoy.\n\nBusiness Input JSON:\n{\n\"title\":\"{{$json.title}}\",\n\"website\":\"{{$json.website}}\",\n\"phone\":\"{{$json.phone}}\",\n\"address\":\"{{$json.address}}\"\n}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        272,
+        -48
+      ],
+      "id": "e46fb3ad-cf44-4b0c-a42e-25ec256f3a98",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        208,
+        240
+      ],
+      "id": "cd761b89-0a41-4af1-9571-e6d80723cd31",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "6KwGNETxowVbvmtB",
+          "name": "Google Gemini(PaLM) Api account 653"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1icD5tMG2NCfUiiynESAooY2CrV0GQIiKTtpqOZ5MPCw",
+          "mode": "list",
+          "cachedResultName": "Lead Gen",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1icD5tMG2NCfUiiynESAooY2CrV0GQIiKTtpqOZ5MPCw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1icD5tMG2NCfUiiynESAooY2CrV0GQIiKTtpqOZ5MPCw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Business Name": "={{ $('Get dataset items').item.json.title }}",
+            "Domain": "={{ $('Get dataset items').item.json.website }}",
+            "Phone": "=\" {{ $('Get dataset items').item.json.phone }}\"+\"{{ $('Get dataset items').item.json.phoneUnformatted }}\"",
+            "Address": "={{ $('Get dataset items').item.json.address }}",
+            "Review": "={{ $('Get dataset items').item.json.reviewsCount }}",
+            "Map Details": "={{ $('Get dataset items').item.json.url }}",
+            "Business Details": "={{ $json.output }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Business Name",
+              "displayName": "Business Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Domain",
+              "displayName": "Domain",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Address",
+              "displayName": "Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Review",
+              "displayName": "Review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Map Details",
+              "displayName": "Map Details",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Business Details",
+              "displayName": "Business Details",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        448,
+        192
+      ],
+      "id": "902f8da2-c2dd-4410-85f0-de7912fdca7e",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5bE0srp6NudnofJi",
+          "name": "Google Sheets account 377"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "2ca99da5-6933-4039-8f52-207a65e70734",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -656,
+        -16
+      ],
+      "id": "2b19d324-d77f-4c03-95ef-04701e0a1c79",
+      "name": "Webhook",
+      "webhookId": "2ca99da5-6933-4039-8f52-207a65e70734"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').item.json.body.email }}",
+        "subject": "about the business ideas",
+        "message": "={{ $json['Business Details'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        608,
+        64
+      ],
+      "id": "79e53c43-9c90-4e6b-a63e-5d45c55ccaca",
+      "name": "Send a message",
+      "webhookId": "500942cc-8e6f-46a0-ae17-0d57ecf39287",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "UhAzP4erAl02bp0O",
+          "name": "Gmail account 471"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Run an Actor": {
+      "main": [
+        [
+          {
+            "node": "Get dataset items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get dataset items": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Run an Actor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "2928b298-0feb-4ef0-b427-01f88eb60b92",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5f00bba974abf03cb5183d4d65f8a9645a781b04770df6a7d08284fca87d50b3"
+  },
+  "id": "mbu1003gDpiBFetJ",
+  "tags": []
+}
